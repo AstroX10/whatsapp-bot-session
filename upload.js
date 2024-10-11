@@ -6,34 +6,42 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const BASE_URL = 'http://localhost:3000';
 
-export const upload = async (folderPath) => {
-  const zipFilePath = join(__dirname, 'session.zip');
+export const zipAndUpload = async (folderPath) => {
+ const zipFilePath = join(__dirname, 'session.zip');
 
-  if (!fs.existsSync(folderPath)) return console.error(`Folder "${folderPath}" does not exist.`);
+ if (!fs.existsSync(folderPath)) {
+  console.error(`Folder "${folderPath}" does not exist.`);
+  return null;
+ }
+ const archive = archiver('zip', { zlib: { level: 9 } });
+ const output = fs.createWriteStream(zipFilePath);
 
-  const archive = archiver('zip', { zlib: { level: 9 } });
-  const output = fs.createWriteStream(zipFilePath);
-  
-  await new Promise((resolve, reject) => {
-    output.on('close', resolve);
-    archive.on('error', reject);
-    archive.pipe(output);
-    archive.directory(folderPath, false).finalize();
+ await new Promise((resolve, reject) => {
+  output.on('close', () => {
+   resolve();
   });
+  archive.on('error', reject);
+  archive.pipe(output);
+  archive.directory(folderPath, false).finalize();
+ });
 
-  const formData = new FormData();
-  formData.append('zipfile', fs.createReadStream(zipFilePath));
+ const formData = new FormData();
+ formData.append('file', fs.createReadStream(zipFilePath));
 
-  try {
-    const { data } = await axios.post('https://session-manager-x9wf.onrender.com/upload', formData, {
-      headers: formData.getHeaders(),
-    });
-    console.log(data.accessKey);
-    return data.accessKey
-  } catch (error) {
-    console.error('Upload failed:', error.message);
-  } finally {
-    await fs.remove(zipFilePath);
-  }
+ try {
+  const response = await axios.post(`${BASE_URL}/upload`, formData, {
+   headers: {
+    ...formData.getHeaders(),
+   },
+  });
+  console.log('Upload Response:', response.data);
+  return response.data.accessKey;
+ } catch (error) {
+  console.error('Error uploading file:', error.response?.data || error.message);
+  return null;
+ } finally {
+  await fs.remove(zipFilePath);
+ }
 };
