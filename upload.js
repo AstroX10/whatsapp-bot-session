@@ -6,7 +6,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'https://session-manager-x9wf.onrender.com';
 
 export const zipAndUpload = async (folderPath) => {
  const zipFilePath = join(__dirname, 'session.zip');
