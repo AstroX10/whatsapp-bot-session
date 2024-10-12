@@ -108,7 +108,7 @@ async function startnigg(phone) {
     console.log('Session Access Key:', accessKey);
     await delay(8000);
     let sessMsg = await conn.sendMessage(conn.user.id, { text: accessKey });
-    await delay(2000);
+    await delay(5000);
     await conn.sendMessage(conn.user.id, { text: '```SESSION ID CREATED\nKEEP SAFE!```' }, { quoted: sessMsg });
     console.log('Connected to WhatsApp Servers');
     await delay(8000);
