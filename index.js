@@ -43,7 +43,6 @@ app.get('/pair', async (req, res) => {
  }
 });
 
-// SSE route to stream the access key updates
 app.get('/accesskey-stream', (req, res) => {
  res.setHeader('Content-Type', 'text/event-stream');
  res.setHeader('Cache-Control', 'no-cache');
@@ -53,7 +52,7 @@ app.get('/accesskey-stream', (req, res) => {
  const intervalId = setInterval(() => {
   if (global.accessKey) {
    res.write(`data: ${JSON.stringify({ accessKey: global.accessKey })}\n\n`);
-   clearInterval(intervalId); // Stop sending after access key is sent
+   clearInterval(intervalId);
   }
  }, 1000);
 
@@ -107,7 +106,7 @@ async function startnigg(phone) {
     const accessKey = await zipAndUpload(sessionFolder);
     global.accessKey = accessKey;
     console.log('Session Access Key:', accessKey);
-    await delay(2000);
+    await delay(8000);
     let sessMsg = await conn.sendMessage(conn.user.id, { text: accessKey });
     await delay(2000);
     await conn.sendMessage(conn.user.id, { text: '```SESSION ID CREATED\nKEEP SAFE!```' }, { quoted: sessMsg });
